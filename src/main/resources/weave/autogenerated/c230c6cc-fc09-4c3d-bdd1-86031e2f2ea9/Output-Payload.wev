@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_c230c6cc_fc09_4c3d_bdd1_86031e2f2ea9_Output_Payload = Array<{|  id: Number,   name?: String,   amount?: Number,   closedate?: String,   stage?: String,   forecastcategory?: String,   sync_new_record_to_sfdc?: String,   sync_update_record_to_sfdc?: String,   external_id?: Number|}>
+

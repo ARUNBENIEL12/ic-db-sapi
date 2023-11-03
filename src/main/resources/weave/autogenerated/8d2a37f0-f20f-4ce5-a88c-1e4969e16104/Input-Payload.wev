@@ -1,0 +1,14 @@
+%dw 2.0
+
+type auto_8d2a37f0_f20f_4ce5_a88c_1e4969e16104_Input_Payload = {
+  External_Id?: String, 
+  amount?: Number, 
+  closedate: String, 
+  stage: String, 
+  Sync_update_record_to_sfdc?: String, 
+  name: String, 
+  Sync_new_record_to_sfdc?: String, 
+  forecastcategory?: String, 
+  _?: Any
+} {"description": "update the user"}
+

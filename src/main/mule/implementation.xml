@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<flow name="get-by-id-opportunity-implementation" doc:id="d42cb1f9-8e79-4049-9adc-4bbbbb4ad8b9" >
+		<logger level="INFO" doc:name="get-by-id implementation flow starts" doc:id="32d28730-9a2f-4a4e-a877-3fe3f4b390cf" />
+		<set-variable value="#[attributes.uriParams.id]" doc:name="store id" doc:id="3b515694-7c31-416c-8941-d53ba8f8e98b" variableName="id"/>
+		<db:query-single doc:name="for single id it is showing the opportunity" doc:id="1e99c908-8531-4e1e-8650-d771b8f9e196" config-ref="Database_Config">
+			<db:sql ><![CDATA[select id From freedb_movies_ticket_booking.opportunity where id=:id;]]></db:sql>
+			<db:input-parameters ><![CDATA[#["id": vars.id]]]></db:input-parameters>
+		</db:query-single>
+		<choice doc:name="Choice" doc:id="6d74f45a-20af-4550-9c4d-c2abb4eb7561" >
+			<when expression="#[isEmpty(payload)]">
+				<set-payload value='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  is_success: false,&#10;  errors: [{&#10; "errormessage": "No record found with This particular Id To Get Details"&#10;  }]&#10;}]' doc:name="if the id is not there it will go here" doc:id="46f97a88-9c5f-4944-bee1-87b3b229757f" />
+				<logger level="INFO" doc:name="get-by-id implementation flow ends" doc:id="d76940ea-e4e4-4fd5-b588-516afbea9d4f" message="get by id opportunity completed"/>
+			</when>
+			<otherwise >
+				<db:select doc:name="get opportunity from db by id" doc:id="72d8dbd3-7b07-4f24-aad4-9645f9b46b3e" config-ref="Database_Config">
+			<db:sql><![CDATA[SELECT * from freedb_movies_ticket_booking.opportunity where id=:id]]></db:sql>
+					<db:input-parameters ><![CDATA[#[{
+	"id":vars.id
+}]]]></db:input-parameters>
+		</db:select>
+				<ee:transform doc:name="the payload we are giving here" doc:id="60ac5749-7724-46e7-83fb-6358f698ceb1">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+				<logger level="INFO" doc:name="get-by-id implementation flow ends" doc:id="f49cf8d4-4035-490c-ad8e-08494f37ac5f" message="get by id opportunity completed"/>
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="post-opportunity-implementation" doc:id="d561df75-d79b-45e2-8cef-fdc72ad89f04" >
+		<logger level="INFO" doc:name="post implementaion flow starts" doc:id="8df046f5-c011-49e9-8609-8d8090ce643c" message="create opportunity implementation started" />
+		<set-variable value="#[payload.name]" doc:name="Set Variable" doc:id="eccb7ffe-c536-4e38-92d9-469e8d7050ee" variableName="Name" />
+		<db:insert doc:name="create opportunity in database" doc:id="873300ec-9094-4d09-81aa-2158afe2640a" config-ref="Database_Config">
+			<db:sql ><![CDATA[INSERT INTO opportunity
+(name, amount, stage, forecastcategory, closedate, sync_new_record_to_sfdc, sync_update_record_to_sfdc, external_id)
+VALUES(:name,:amount,:stage, :forecastcategory, :closedate, :sync_new_record_to_sfdc,:sync_update_record_to_sfdc, :external_id);]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"name": vars.Name,
+	"forecastcategory": payload.forecastcategory,
+	"amount": payload.amount,
+	"stage":payload.stage,
+	"closedate":payload.closedate,
+	"sync_new_record_to_sfdc":payload.sync_new_record_to_sfdc,
+	"sync_update_record_to_sfdc":payload.sync_update_record_to_sfdc,
+	"external_id":payload.external_id
+	}]]]></db:input-parameters>
+		</db:insert>
+		<db:select doc:name="Select" doc:id="4f9a4dfc-7f31-42d0-9941-68de7a65088a" config-ref="Database_Config">
+			<db:sql ><![CDATA[select Id from opportunity where name= :name;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"name": vars.Name
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="create opportunity response transform message" doc:id="e1bf9291-7070-4c0c-929a-fa84e4d0b01a" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  is_success: true,
+  id: payload[0].Id,
+  error: []
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="post implementation flow ends" doc:id="cfdec151-5907-4335-bdc0-e3be4dd57389" message="create opportunity implementation compleated" />
+	</flow>
+	<flow name="getting-all-opportunity-implementation" doc:id="c230c6cc-fc09-4c3d-bdd1-86031e2f2ea9" >
+		<logger level="INFO" doc:name="get all flow starts" doc:id="4c85af12-81a9-472d-9c02-1091d6bc414e" message="get-All-opportunities implementation start" />
+		<db:select doc:name="Retrive All opportunities from database" doc:id="4f22dc8d-af8a-41dc-8b8d-8e8d877891a4" config-ref="Database_Config">
+			<db:sql><![CDATA[SELECT * from freedb_movies_ticket_booking.opportunity;]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="DW Set To Get opportunity Response Transform" doc:id="a18387fc-d8c0-4142-8815-5201c6a30825" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="get all flow ends" doc:id="3c14ca29-fd3f-4920-89fb-296877748435" message="get-All-opportunities implementation compleated" />
+	</flow>
+	<flow name="update-opportunity-implementation" doc:id="8d2a37f0-f20f-4ce5-a88c-1e4969e16104" >
+		<logger level="INFO" doc:name="update opportunity flow starts" doc:id="dbec716f-a6cd-4e05-a273-962c3ce93a0f" message="update opportunity implementation start"/>
+		<set-variable value="#[attributes.uriParams.id]" doc:name="Set Variable" doc:id="91374522-a8ab-40e3-a209-3415b7b4f2e4" variableName="id"/>
+		<db:select doc:name="Select" doc:id="6fc8a196-0155-414f-817c-63bfbf893142" config-ref="Database_Config" target="update" transactionalAction="NOT_SUPPORTED" queryTimeoutUnit="DAYS">
+			<db:sql ><![CDATA[SELECT *
+FROM freedb_movies_ticket_booking.opportunity
+WHERE id= :id]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{id: attributes.uriParams.id}]]]></db:input-parameters>
+		</db:select>
+		<choice doc:name="Choice" doc:id="e13372a4-f9cd-4e38-aa81-7c6f426aff25" >
+			<when expression="#[isEmpty(vars.update)]">
+				<ee:transform doc:name="Transform Message" doc:id="768b51e0-c844-4b60-a1ab-ba639bc51614" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  is_success: false,
+  errors: [{
+ "errormessage": "No record found with This particular Id To Get Details"
+  }]
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<db:update doc:name="Update opportunity in database" doc:id="112ceb96-89db-45e9-b470-99b5dfc20642" config-ref="Database_Config">
+			<db:sql><![CDATA[UPDATE freedb_movies_ticket_booking.opportunity
+SET name= :name,amount= :amount,closedate= :closedate,stage= :stage,forecastcategory= :forecastcategory,sync_new_record_to_sfdc= :sync_new_record_to_sfdc,sync_update_record_to_sfdc= :sync_update_record_to_sfdc,external_id= :external_id
+WHERE id= :id;]]></db:sql>
+			<db:input-parameters><![CDATA[#[{
+	"name":payload.name,
+	"amount":payload.amount,
+	"closedate":payload.closedate,
+	"stage":payload.stage,
+	"forecastcategory":payload.forecastcategory,
+	"sync_new_record_to_sfdc":payload.Sync_new_record_to_sfdc,
+	"sync_update_record_to_sfdc":payload.Sync_new_record_to_sfdc,
+	"external_id":payload.External_Id,
+	"id": vars.id}]]]></db:input-parameters>
+		</db:update>
+				<ee:transform doc:name="DW Set To update opportunityResponse Transform" doc:id="fdd67878-068f-489c-abe3-282d1779f545">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  is_success: true,
+  id: vars.id  ,
+  errors: []
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="update opportunity flow ends" doc:id="55886e59-4044-4fb5-89ff-995dcede2397" message="update opportunity implementation compleated"/>
+	</flow>
+	<flow name="delete-opportunity-by-id-implementation" doc:id="d36e1188-c126-47ca-8a13-b316c25e27b3" >
+		<logger level="INFO" doc:name="delete opportunity flow starts" doc:id="517f5b27-2e24-4fe2-aad7-8f84b9fc89a9" message="Delete By-Id implementation start"/>
+		<set-variable value="#[attributes.uriParams.id]" doc:name="" doc:id="edf0e6fb-0de0-4c3b-9fe2-cedb49494502" variableName="id"/>
+		<db:delete doc:name="Delete-By-Id in database" doc:id="5c3fad08-7015-43ce-abb3-ad7763ebcc99" config-ref="Database_Config">
+			<db:sql ><![CDATA[DELETE from freedb_movies_ticket_booking.opportunity where id=:id;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id":vars.id
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="DW Set To delete opportunity Response Transform" doc:id="4de1421a-355b-4ef3-854e-1f0c4e54c8e0" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  is_success: true,
+  id: vars.id,
+  errors: []
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="delete opportunity flow ends" doc:id="2345a8aa-b46d-4d10-9f29-fd467bd695b0" message="Delete By-Id implementation compleated"/>
+	</flow>
+</mule>

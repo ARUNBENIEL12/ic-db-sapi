@@ -1,0 +1,11 @@
+{
+  "id": "001D000000KQO2Y",
+  "name": "BENIEL",
+  "amount": 18000,
+  "closedate": "2023-11-30",
+  "stage": "Prospecting",
+  "forecastcategory": "closed",
+  "Sync_new_record_to_sfdc": "true",
+  "Sync_update_record_to_sfdc": "true",
+  "External_Id": "12345"
+}

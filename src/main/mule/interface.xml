@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+    <apikit:config name="ic_db_sapi-config" api="resource::ecb848ae-500d-40a1-a5c9-769d96865f1b:ic-db:1.0.0:raml:zip:ic_db_sapi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+	<flow name="ic_db_sapi-main">
+        <http:listener path="/api/*" config-ref="HTTP_Listener_config">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="ic_db_sapi-config" />
+		<error-handler ref="Error_Handler" />
+    </flow>
+    <flow name="ic_db_sapi-console">
+        <http:listener path="/console/*" config-ref="HTTP_Listener_config">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="ic_db_sapi-config" />
+    </flow>
+    <flow name="put:\opportunities\(id):application\json:ic_db_sapi-config">
+		<flow-ref doc:name="update opportunity by id" doc:id="0595fc13-ae32-4b90-b4ad-29ad0d340c8c" name="update-opportunity-implementation"/>
+    </flow>
+    <flow name="delete:\opportunities\(id):ic_db_sapi-config">
+		<flow-ref doc:name="delete opportunity by id" doc:id="d7834015-4304-40a7-adb5-a7a7c644af3c" name="delete-opportunity-by-id-implementation"/>
+    </flow>
+    <flow name="get:\opportunities:ic_db_sapi-config">
+        <flow-ref doc:name="get all opportunity" doc:id="05ece44b-507a-4900-88c5-e6af70da3cb2" name="getting-all-opportunity-implementation"/>
+    </flow>
+    <flow name="get:\opportunities\(id):ic_db_sapi-config">
+		<flow-ref doc:name="get opportunity by id" doc:id="de4cac51-0a9d-4f27-96a9-568a7515a515" name="get-by-id-opportunity-implementation"/>
+    </flow>
+	<flow name="post:\opportunities:application\json:ic_db_sapi-config">
+        <flow-ref doc:name="create opportunity" doc:id="4ddc45c7-19ef-461a-8a43-5536f5ba0d39" name="post-opportunity-implementation"/>
+    </flow>
+</mule>

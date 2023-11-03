@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_d42cb1f9_8e79_4049_9adc_4bbbbb4ad8b9_Output_Payload = Array<{  External_Id?: String,   amount?: Number,   closedate: String,   stage: String,   Sync_update_record_to_sfdc?: String,   name: String,   Sync_new_record_to_sfdc?: String,   forecastcategory?: String,   _?: Any}> {"description": "retrieving by id"}
+

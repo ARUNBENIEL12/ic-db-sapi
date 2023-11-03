@@ -1,0 +1,11 @@
+db:
+  port: "![BNW+NnBulqvHttdb9LJ99g==]"
+  host: "![H69rvkQXL7ZxN5OJtIiLgg==]"
+  username: "![sSnxYAPe51FCtm3ZD1PfHLfQDeEe5Hrlo6SNbKL71es=]"
+  password: "![PJywaVBTcg6V4osvND/leQ==]"
+  database: "![838fuW0SYEWBFNgQuVxmQxVhR6UsC+3JFwb/VV+TyGQ=]"
+  
+https:
+  port: "8082"
+  
+    
